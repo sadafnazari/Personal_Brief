@@ -1,0 +1,70 @@
+# Personal Brief — your control panel.
+# Edit this file to change what gets tracked; you never touch the code.
+# This is a starter list — prune what you don't want and add your own.
+# Tip: open a feed URL in a browser first to confirm it loads before relying on it.
+
+# Topics you care about. Used to filter noise out of the trend sources.
+interests:
+  - software architecture
+  - AI/ML engineering
+  - distributed systems
+
+# Pillar 1 — people you deliberately follow (their blog/newsletter RSS feed).
+follow:
+  - name: Martin Fowler
+    rss: https://martinfowler.com/feed.atom
+  - name: Simon Willison
+    rss: https://simonwillison.net/atom/everything/
+  - name: Julia Evans
+    rss: https://jvns.ca/atom.xml
+  - name: Kyle Kingsbury (Aphyr)
+    rss: https://aphyr.com/posts.atom
+  - name: Andrej Karpathy
+    rss: https://karpathy.bearblog.dev/feed/?type=rss
+  - name: Chris Olah
+    rss: https://transformer-circuits.pub/feed.xml
+  - name: Lilian Weng
+    rss: https://lilianweng.github.io/index.xml
+  - name: Jay Alammar
+    rss: https://newsletter.languagemodels.co/feed
+  - name: Sebastian Raschka
+    rss: https://magazine.sebastianraschka.com/feed
+  - name: Sebastian Ruder
+    rss: https://ruder.io/rss/
+  - name: Armin Ronacher
+    rss: https://lucumr.pocoo.org/feed.atom
+  - name: Eugene Yan
+    rss: https://eugeneyan.com/rss/
+  - name: Nicholas Carlini
+    rss: https://nicholas.carlini.com/writing/feed.xml
+
+# Pillar 2 — what's gaining traction right now. Thresholds keep it to signal.
+trends:
+  hackernews:
+    min_points: 150            # ignore front-page items below this score
+  reddit:
+    subreddits:
+      - programming
+      - ExperiencedDevs
+      - LocalLLaMA
+      - MachineLearning
+    min_upvotes: 200
+
+# How your daily brief gets written.
+summarizer:
+  provider: ollama             # "ollama" (free, local) or "claude" (paid API)
+  model: llama3.1              # any model you have pulled in Ollama
+
+# Where the brief is delivered.
+delivery:
+  telegram: true
+
+# Pillar 3 — surface new voices worth following. Mines domains out of your
+# Trends items; once a domain shows up in `min_sightings` separate Trends
+# items, it's suggested via Telegram. Reply "approve <domain>" / "reject
+# <domain>" (domain shown with each suggestion) to decide. Approved authors
+# are tracked in the local database, not here — they start showing up under
+# Following automatically once approved.
+discover:
+  enabled: true
+  min_sightings: 3

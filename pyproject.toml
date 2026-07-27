@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "personal-brief"
+version = "0.1.0"
+description = "A personal assistant that follows the people and trends worth your attention and delivers a daily brief."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Sadaf Nazari" }]
+keywords = ["news", "digest", "rss", "assistant", "telegram"]
+dependencies = [
+    "PyYAML>=6.0",
+    "feedparser>=6.0",
+    "requests>=2.32",
+    "libsql-client>=0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pytest>=8.0",
+    "pre-commit>=3.8",
+    "types-PyYAML>=6.0",
+    "types-requests>=2.32",
+    "responses>=0.25",
+]
+
+[project.scripts]
+personal-brief = "personal_brief.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/personal_brief"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src", "tests"]
+
+# feedparser ships no type stubs and no py.typed marker.
+[[tool.mypy.overrides]]
+module = "feedparser.*"
+ignore_missing_imports = true
+
+# libsql_client ships no type stubs.
+[[tool.mypy.overrides]]
+module = "libsql_client.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

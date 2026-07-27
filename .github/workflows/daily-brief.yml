@@ -1,3 +1,4 @@
+# Runs personal-brief on a schedule via GitHub Actions.
 name: Daily brief
 
 on:

@@ -4,8 +4,8 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)
-<!-- After pushing to GitHub, replace OWNER/REPO for a live CI badge:
-![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg) -->
+![CI](https://github.com/sadafnazari/Personal_Brief/actions/workflows/ci.yml/badge.svg)
+![Daily brief](https://github.com/sadafnazari/Personal_Brief/actions/workflows/daily-brief.yml/badge.svg)
 
 Personal Brief watches the sources you trust and the places new ideas surface, then
 sends you one concise digest a day. Three pillars:
@@ -129,11 +129,11 @@ instructions, but equally useful as a human contributor guide).
 - [x] **Phase 2** — Hacker News + Reddit trends, grouped digest sections
 - [x] **Phase 3** — Telegram delivery
 - [x] **Phase 4** — Discover pillar (suggest-and-approve)
-- [ ] **Phase 5** — scheduling (GitHub Actions + GitHub Models + Turso — code
-      in place, pending repo `git init`/push, a real Turso database, and one
-      genuine end-to-end cron run before this is checked off)
-- [ ] **Phase 6** — deployment (superseded by Phase 5's GitHub Actions
-      approach — no separate Docker packaging is planned unless that changes)
+- [x] **Phase 5** — scheduling (GitHub Actions + GitHub Models + Turso,
+      verified with a real end-to-end run — daily digest delivered via
+      Telegram, dedupe state persisted in Turso)
+- [x] **Phase 6** — deployment (superseded by Phase 5's GitHub Actions
+      approach — no separate Docker packaging planned unless that changes)
 
 ## License
 

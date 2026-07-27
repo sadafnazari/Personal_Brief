@@ -7,20 +7,29 @@ from datetime import UTC, datetime
 from time import struct_time
 
 import feedparser
+import requests
 
 from personal_brief.models import Item, Pillar
 from personal_brief.sources import SourceError
 
 DEFAULT_MAX_ITEMS = 5
+DEFAULT_TIMEOUT_SECONDS = 15.0
 
 
 class RssSource:
     """Fetches the most recent entries from a single RSS/Atom feed."""
 
-    def __init__(self, name: str, url: str, max_items: int = DEFAULT_MAX_ITEMS) -> None:
+    def __init__(
+        self,
+        name: str,
+        url: str,
+        max_items: int = DEFAULT_MAX_ITEMS,
+        timeout: float = DEFAULT_TIMEOUT_SECONDS,
+    ) -> None:
         self.name = name
         self.url = url
         self.max_items = max_items
+        self.timeout = timeout
 
     def fetch(self) -> list[Item]:
         """Fetch and parse the feed, returning up to ``max_items`` normalized items.
@@ -28,13 +37,24 @@ class RssSource:
         Raises:
             SourceError: if the feed cannot be fetched or contains no usable entries.
         """
-        parsed = feedparser.parse(self.url)
+        # Fetch via `requests` ourselves (bounded by `timeout`) rather than letting
+        # feedparser do its own networking — feedparser's built-in fetch has no
+        # timeout and can hang indefinitely against a slow or unresponsive feed.
+        try:
+            response = requests.get(self.url, timeout=self.timeout)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as error:
+            raise SourceError(
+                f"Could not fetch feed '{self.name}' ({self.url}): {error}"
+            ) from error
 
-        # feedparser never raises on network/parse failure — it sets `bozo` and
-        # stashes the exception instead. Surface that as our own error type.
+        parsed = feedparser.parse(response.content)
+
+        # feedparser never raises on parse failure — it sets `bozo` and stashes
+        # the exception instead. Surface that as our own error type.
         if parsed.get("bozo") and not parsed.get("entries"):
             reason = parsed.get("bozo_exception", "unknown error")
-            raise SourceError(f"Could not fetch feed '{self.name}' ({self.url}): {reason}")
+            raise SourceError(f"Could not parse feed '{self.name}' ({self.url}): {reason}")
 
         return [self._to_item(entry) for entry in parsed.entries[: self.max_items]]
 

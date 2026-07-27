@@ -104,6 +104,22 @@ def resolve_data_dir(explicit_dir: Path | None = None) -> Path:
     return DEFAULT_DATA_DIR
 
 
+_SCHEME_TO_HTTP = {"libsql": "https", "wss": "https", "ws": "http"}
+
+
+def _as_http_url(url: str) -> str:
+    """Rewrite a Turso ``libsql://``/``wss://``/``ws://`` URL to its HTTP equivalent.
+
+    ``libsql_client`` picks its transport from the URL scheme. ``libsql://``
+    (and ``wss://``) select the WebSocket-based Hrana transport, which has
+    been observed failing its handshake from GitHub Actions runners against
+    Turso. Plain HTTP-based Hrana (``https://``/``http://``) works reliably
+    and is functionally equivalent for our request/response query pattern.
+    """
+    scheme, separator, rest = url.partition("://")
+    return f"{_SCHEME_TO_HTTP.get(scheme, scheme)}{separator}{rest}"
+
+
 class _Backend(Protocol):
     """The minimal query surface :class:`Store` needs from either database.
 
@@ -157,8 +173,22 @@ class _TursoBackend:
     def __init__(self, url: str, auth_token: str) -> None:
         import libsql_client
 
-        self._client = libsql_client.create_client_sync(url=url, auth_token=auth_token)
-        self._client.batch(_SCHEMA_STATEMENTS)
+        # Force plain HTTP-based Hrana instead of the WebSocket transport
+        # libsql_client defaults to for `libsql://`/`wss://` URLs — the
+        # WebSocket handshake was observed failing (400) from GitHub Actions
+        # runners against Turso, while HTTP works reliably.
+        self._client = libsql_client.create_client_sync(
+            url=_as_http_url(url), auth_token=auth_token
+        )
+        try:
+            self._client.batch(_SCHEMA_STATEMENTS)
+        except Exception:
+            # The sync client's background thread only gets cleaned up
+            # automatically if *construction* fails — a failure here would
+            # otherwise leak that thread and hang the process indefinitely
+            # instead of exiting with this exception.
+            self._client.close()
+            raise
 
     def fetchone(self, sql: str, params: Sequence[object] = ()) -> Sequence[Any] | None:
         rows = self._client.execute(sql, params).rows

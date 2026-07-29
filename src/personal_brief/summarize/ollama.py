@@ -11,7 +11,7 @@ from collections.abc import Sequence
 import requests
 
 from personal_brief.models import Item
-from personal_brief.summarize import SummarizerError
+from personal_brief.summarize import SummarizerError, build_prompt
 
 DEFAULT_BASE_URL = "http://localhost:11434"
 DEFAULT_TIMEOUT_SECONDS = 120.0
@@ -35,7 +35,7 @@ class OllamaSummarizer:
         if not items:
             return "Nothing new today."
 
-        prompt = _build_prompt(items)
+        prompt = build_prompt(items)
         try:
             response = requests.post(
                 f"{self.base_url}/api/generate",
@@ -57,17 +57,3 @@ class OllamaSummarizer:
             raise SummarizerError(f"Unexpected response from Ollama: {error}") from error
 
         return str(text).strip()
-
-
-def _build_prompt(items: Sequence[Item]) -> str:
-    entries = "\n\n".join(
-        f"- {item.title} (by {item.author or item.source})\n  {item.url}\n  {item.body[:500]}"
-        for item in items
-    )
-    return (
-        "You are writing a short, friendly daily digest for one reader who follows "
-        "these authors. Summarize the new posts below in a few sentences each, "
-        "grouped naturally, in plain prose. Do not invent details not present in "
-        "the text. Skip a post entirely if there isn't enough content to summarize.\n\n"
-        f"{entries}"
-    )

@@ -34,6 +34,21 @@ class SummarizerError(Exception):
     """Raised when a summarizer cannot produce a summary."""
 
 
+def build_prompt(items: Sequence[Item]) -> str:
+    """Build the shared digest prompt used by every summarizer backend."""
+    entries = "\n\n".join(
+        f"- {item.title} (by {item.author or item.source})\n  {item.url}\n  {item.body[:500]}"
+        for item in items
+    )
+    return (
+        "You are writing a short, friendly daily digest for one reader who follows "
+        "these authors. Summarize the new posts below in a few sentences each, "
+        "grouped naturally, in plain prose. Do not invent details not present in "
+        "the text. Skip a post entirely if there isn't enough content to summarize.\n\n"
+        f"{entries}"
+    )
+
+
 def create_summarizer(config: SummarizerConfig) -> Summarizer:
     """Build the summarizer named by ``config.provider``.
 

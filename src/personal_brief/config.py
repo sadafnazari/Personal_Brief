@@ -6,7 +6,10 @@ module turns that file into typed, validated objects and fails fast — with a c
 message naming the offending key — when something is missing or malformed.
 
 The config path is environment-overridable (``PERSONAL_BRIEF_CONFIG``) so the app
-stays container-friendly.
+stays container-friendly. ``summarizer.provider``/``summarizer.model`` are
+individually environment-overridable too (``PERSONAL_BRIEF_SUMMARIZER_PROVIDER``/
+``PERSONAL_BRIEF_SUMMARIZER_MODEL``), so CI can swap in a hosted summarizer
+without forking the whole config file.
 """
 
 from __future__ import annotations
@@ -20,6 +23,8 @@ import yaml
 
 DEFAULT_CONFIG_PATH = Path("config/sources.yaml")
 CONFIG_PATH_ENV_VAR = "PERSONAL_BRIEF_CONFIG"
+SUMMARIZER_PROVIDER_ENV_VAR = "PERSONAL_BRIEF_SUMMARIZER_PROVIDER"
+SUMMARIZER_MODEL_ENV_VAR = "PERSONAL_BRIEF_SUMMARIZER_MODEL"
 _VALID_PROVIDERS = {"ollama", "claude", "github_models"}
 
 
@@ -169,10 +174,10 @@ def _parse_summarizer(raw: dict[str, Any]) -> SummarizerConfig:
     summarizer = raw.get("summarizer") or {}
     if not isinstance(summarizer, dict):
         raise ConfigError("'summarizer' must be a mapping.")
-    provider = summarizer.get("provider")
+    provider = os.environ.get(SUMMARIZER_PROVIDER_ENV_VAR) or summarizer.get("provider")
     if provider not in _VALID_PROVIDERS:
         raise ConfigError(f"'summarizer.provider' must be one of {sorted(_VALID_PROVIDERS)}.")
-    model = summarizer.get("model")
+    model = os.environ.get(SUMMARIZER_MODEL_ENV_VAR) or summarizer.get("model")
     if model is not None and not isinstance(model, str):
         raise ConfigError("'summarizer.model' must be a string.")
     return SummarizerConfig(provider=str(provider), model=model)

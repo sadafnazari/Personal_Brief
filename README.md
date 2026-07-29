@@ -83,11 +83,11 @@ fill in whichever you need. `.env` is gitignored.
   instead of Ollama — GitHub Actions runners can't realistically run a local
   model, and GitHub Models needs no separate account or secret (the
   workflow's own `GITHUB_TOKEN` authenticates it, via the `models: read`
-  permission). This is CI-only — local runs still default to Ollama. Which
-  config a run uses is controlled by `PERSONAL_BRIEF_CONFIG`:
-  [`config/sources.ci.yaml`](config/sources.ci.yaml) is the CI copy of
-  `sources.yaml` with `summarizer.provider: github_models` swapped in; keep
-  the two in sync by hand if you edit `follow`/`trends`/`discover`.
+  permission). This is CI-only — local runs still default to Ollama. Both
+  environments share the same [`config/sources.yaml`](config/sources.yaml);
+  the workflow overrides just the summarizer via
+  `PERSONAL_BRIEF_SUMMARIZER_PROVIDER` / `PERSONAL_BRIEF_SUMMARIZER_MODEL`
+  env vars, so there's nothing to keep in sync by hand.
 - **State (dedupe + Discover):** [Turso](https://turso.tech) (hosted
   libSQL/SQLite), not the local SQLite file — GitHub Actions runners are
   ephemeral, so without a real database, every run would think everything is

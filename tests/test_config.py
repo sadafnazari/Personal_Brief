@@ -68,3 +68,13 @@ def test_invalid_provider_raises(tmp_path: Path) -> None:
     bad = _VALID_YAML.replace("provider: ollama", "provider: gpt4")
     with pytest.raises(ConfigError):
         load_config(_write(tmp_path, bad))
+
+
+def test_summarizer_env_vars_override_yaml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PERSONAL_BRIEF_SUMMARIZER_PROVIDER", "github_models")
+    monkeypatch.setenv("PERSONAL_BRIEF_SUMMARIZER_MODEL", "openai/gpt-4o-mini")
+
+    config = load_config(_write(tmp_path, _VALID_YAML))
+
+    assert config.summarizer.provider == "github_models"
+    assert config.summarizer.model == "openai/gpt-4o-mini"

@@ -88,8 +88,9 @@ class Summarizer(Protocol):
   local/interactive default.
 - `github_models` — implemented (Phase 5), free/hosted via
   [GitHub Models](https://docs.github.com/en/github-models), authenticated
-  with a `models: read`-scoped `GITHUB_TOKEN`. The GitHub Actions default
-  (`config/sources.ci.yaml`) — CI runners can't realistically run Ollama.
+  with a `models: read`-scoped `GITHUB_TOKEN`. The GitHub Actions default,
+  set via `PERSONAL_BRIEF_SUMMARIZER_PROVIDER`/`PERSONAL_BRIEF_SUMMARIZER_MODEL`
+  env vars in `daily-brief.yml` — CI runners can't realistically run Ollama.
 - `claude` — stubbed; `create_summarizer` raises `SummarizerError` with a
   clear "not implemented yet" message rather than silently failing.
 

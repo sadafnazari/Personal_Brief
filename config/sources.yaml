@@ -50,9 +50,11 @@ trends:
       - MachineLearning
     min_upvotes: 200
 
-# How your daily brief gets written.
+# How your daily brief gets written. This is the local default; the daily-brief
+# GitHub Actions workflow overrides provider/model via env vars (see
+# .github/workflows/daily-brief.yml) since Actions runners can't run Ollama.
 summarizer:
-  provider: ollama             # "ollama" (free, local) or "claude" (paid API)
+  provider: ollama             # "ollama" (free, local), "claude" (paid API), or "github_models"
   model: llama3.1              # any model you have pulled in Ollama
 
 # Where the brief is delivered.

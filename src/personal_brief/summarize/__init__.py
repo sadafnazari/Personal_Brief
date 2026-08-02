@@ -15,7 +15,7 @@ from typing import Protocol
 from personal_brief.config import SummarizerConfig
 from personal_brief.models import Item
 
-GITHUB_TOKEN_ENV_VAR = "GITHUB_TOKEN"
+GROQ_API_KEY_ENV_VAR = "GROQ_API_KEY"
 
 
 class Summarizer(Protocol):
@@ -60,23 +60,21 @@ def create_summarizer(config: SummarizerConfig) -> Summarizer:
 
         return OllamaSummarizer(model=config.model or "llama3.1")
 
-    if config.provider == "github_models":
-        from personal_brief.summarize.github_models import GitHubModelsSummarizer
+    if config.provider == "groq":
+        from personal_brief.summarize.groq import GroqSummarizer
 
-        token = os.environ.get(GITHUB_TOKEN_ENV_VAR)
-        if not token:
+        api_key = os.environ.get(GROQ_API_KEY_ENV_VAR)
+        if not api_key:
             raise SummarizerError(
-                f"summarizer.provider 'github_models' requires {GITHUB_TOKEN_ENV_VAR} to be "
-                "set. In GitHub Actions this is provided automatically when the workflow "
-                "grants 'models: read' permission; locally, use a personal access token "
-                "with the same scope."
+                f"summarizer.provider 'groq' requires {GROQ_API_KEY_ENV_VAR} to be set. "
+                "Create a free key at https://console.groq.com/keys."
             )
-        return GitHubModelsSummarizer(model=config.model or "openai/gpt-4o-mini", token=token)
+        return GroqSummarizer(model=config.model or "openai/gpt-oss-20b", api_key=api_key)
 
     if config.provider == "claude":
         raise SummarizerError(
             "summarizer.provider 'claude' is not implemented yet — it's on the "
-            "roadmap. Use 'ollama' or 'github_models' for now."
+            "roadmap. Use 'ollama' or 'groq' for now."
         )
 
     raise SummarizerError(f"Unknown summarizer.provider '{config.provider}'.")

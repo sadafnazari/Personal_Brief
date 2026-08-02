@@ -4,7 +4,7 @@ import responses
 
 from personal_brief.models import Item, Pillar
 from personal_brief.summarize import SummarizerError
-from personal_brief.summarize.github_models import DEFAULT_BASE_URL, GitHubModelsSummarizer
+from personal_brief.summarize.groq import DEFAULT_BASE_URL, GroqSummarizer
 
 
 def _item() -> Item:
@@ -27,7 +27,7 @@ def test_summarize_returns_model_response() -> None:
         json={"choices": [{"message": {"content": "Jane Doe wrote about software design."}}]},
         status=200,
     )
-    summarizer = GitHubModelsSummarizer(model="openai/gpt-4o-mini", token="fake-token")
+    summarizer = GroqSummarizer(model="openai/gpt-oss-20b", api_key="fake-key")
 
     result = summarizer.summarize([_item()])
 
@@ -35,7 +35,7 @@ def test_summarize_returns_model_response() -> None:
 
 
 def test_summarize_returns_placeholder_for_no_items() -> None:
-    summarizer = GitHubModelsSummarizer(model="openai/gpt-4o-mini", token="fake-token")
+    summarizer = GroqSummarizer(model="openai/gpt-oss-20b", api_key="fake-key")
 
     assert summarizer.summarize([]) == "Nothing new today."
 
@@ -48,13 +48,13 @@ def test_summarize_raises_summarizer_error_on_request_failure() -> None:
         json={"error": "rate limited"},
         status=429,
     )
-    summarizer = GitHubModelsSummarizer(model="openai/gpt-4o-mini", token="fake-token")
+    summarizer = GroqSummarizer(model="openai/gpt-oss-20b", api_key="fake-key")
 
     try:
         summarizer.summarize([_item()])
         raise AssertionError("expected SummarizerError")
     except SummarizerError as error:
-        assert "GitHub Models" in str(error)
+        assert "Groq" in str(error)
 
 
 @responses.activate
@@ -65,7 +65,7 @@ def test_summarize_raises_summarizer_error_on_unexpected_response_shape() -> Non
         json={"unexpected": "shape"},
         status=200,
     )
-    summarizer = GitHubModelsSummarizer(model="openai/gpt-4o-mini", token="fake-token")
+    summarizer = GroqSummarizer(model="openai/gpt-oss-20b", api_key="fake-key")
 
     try:
         summarizer.summarize([_item()])

@@ -70,7 +70,7 @@ Everything you tune lives in [`config/sources.yaml`](config/sources.yaml) — th
 people to follow, the trend thresholds, which summarizer to use, and where to
 deliver. You edit that file; you never touch the code.
 
-Secrets (Telegram token, optional Claude API key, GitHub Models token, Turso
+Secrets (Telegram token, optional Claude API key, Groq API key, Turso
 credentials) go in a `.env` file — copy [`.env.example`](.env.example) and
 fill in whichever you need. `.env` is gitignored.
 
@@ -79,15 +79,15 @@ fill in whichever you need. `.env` is gitignored.
 [`.github/workflows/daily-brief.yml`](.github/workflows/daily-brief.yml) runs
 `personal-brief run` on a daily cron schedule, entirely on free tiers:
 
-- **Summarizer:** [GitHub Models](https://docs.github.com/en/github-models)
-  instead of Ollama — GitHub Actions runners can't realistically run a local
-  model, and GitHub Models needs no separate account or secret (the
-  workflow's own `GITHUB_TOKEN` authenticates it, via the `models: read`
-  permission). This is CI-only — local runs still default to Ollama. Both
-  environments share the same [`config/sources.yaml`](config/sources.yaml);
-  the workflow overrides just the summarizer via
-  `PERSONAL_BRIEF_SUMMARIZER_PROVIDER` / `PERSONAL_BRIEF_SUMMARIZER_MODEL`
-  env vars, so there's nothing to keep in sync by hand.
+- **Summarizer:** [Groq](https://console.groq.com/docs) instead of Ollama —
+  GitHub Actions runners can't realistically run a local model, and Groq has
+  a free tier with no credit card required (previously this used GitHub
+  Models, retired 2026-07-30 — see `docs/known-issues.md`). This is CI-only —
+  local runs still default to Ollama. Both environments share the same
+  [`config/sources.yaml`](config/sources.yaml); the workflow overrides just
+  the summarizer via `PERSONAL_BRIEF_SUMMARIZER_PROVIDER` /
+  `PERSONAL_BRIEF_SUMMARIZER_MODEL` env vars, so there's nothing to keep in
+  sync by hand.
 - **State (dedupe + Discover):** [Turso](https://turso.tech) (hosted
   libSQL/SQLite), not the local SQLite file — GitHub Actions runners are
   ephemeral, so without a real database, every run would think everything is
@@ -98,8 +98,8 @@ fill in whichever you need. `.env` is gitignored.
 
 **To enable it**, once the repo is on GitHub: create a free Turso database
 and add `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` as repository secrets,
-alongside `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`. No secret is needed for
-GitHub Models — its permission is granted in the workflow file itself.
+alongside `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` and a `GROQ_API_KEY`
+(free, from [console.groq.com/keys](https://console.groq.com/keys)).
 
 ## Architecture
 

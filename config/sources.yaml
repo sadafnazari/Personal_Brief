@@ -54,7 +54,7 @@ trends:
 # GitHub Actions workflow overrides provider/model via env vars (see
 # .github/workflows/daily-brief.yml) since Actions runners can't run Ollama.
 summarizer:
-  provider: ollama             # "ollama" (free, local), "claude" (paid API), or "github_models"
+  provider: ollama             # "ollama" (free, local), "claude" (paid API), or "groq" (free, hosted)
   model: llama3.1              # any model you have pulled in Ollama
 
 # Where the brief is delivered.

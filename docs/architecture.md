@@ -86,11 +86,12 @@ class Summarizer(Protocol):
 
 - `ollama` — implemented, free/local, requires a running Ollama server. The
   local/interactive default.
-- `github_models` — implemented (Phase 5), free/hosted via
-  [GitHub Models](https://docs.github.com/en/github-models), authenticated
-  with a `models: read`-scoped `GITHUB_TOKEN`. The GitHub Actions default,
-  set via `PERSONAL_BRIEF_SUMMARIZER_PROVIDER`/`PERSONAL_BRIEF_SUMMARIZER_MODEL`
-  env vars in `daily-brief.yml` — CI runners can't realistically run Ollama.
+- `groq` — implemented (Phase 5, migrated from `github_models` after GitHub
+  Models was fully retired on 2026-07-30 — see `docs/known-issues.md`),
+  free/hosted via [Groq](https://console.groq.com/docs), authenticated with a
+  `GROQ_API_KEY`. The GitHub Actions default, set via
+  `PERSONAL_BRIEF_SUMMARIZER_PROVIDER`/`PERSONAL_BRIEF_SUMMARIZER_MODEL` env
+  vars in `daily-brief.yml` — CI runners can't realistically run Ollama.
 - `claude` — stubbed; `create_summarizer` raises `SummarizerError` with a
   clear "not implemented yet" message rather than silently failing.
 

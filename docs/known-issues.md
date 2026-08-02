@@ -43,4 +43,32 @@ real machine and check the log for `r/...` warnings.**
 **Recommendation when picking this up:** try option 1 (just test from home)
 before spending effort on 2 or 3.
 
+## GitHub Models was fully retired (2026-07-30) — summarizer migrated to Groq
+
+**Status:** Resolved. Found in production (daily-brief workflow failure,
+2026-08-01).
+
+**Symptom:** The `github_models` summarizer started failing every run with
+`SummarizerError: GitHub Models request failed: 410 Client Error: Gone for
+url: https://models.github.ai/inference/chat/completions`.
+
+**Root cause:** GitHub retired GitHub Models entirely on 2026-07-30 (staged
+shutdown announced 2026-07-01) — the playground, model catalog, and
+inference API were shut off for all customers, including existing ones. Not
+a bug in this project; the free hosted API this summarizer depended on no
+longer exists.
+
+**Resolution:** Replaced `summarizer.provider: github_models` with `groq`
+(`src/personal_brief/summarize/groq.py`), backed by
+[Groq](https://console.groq.com/docs) — also free, no credit card, and
+OpenAI-compatible so the request/response shape barely changed. Default
+model is `openai/gpt-oss-20b` (Groq's own recommended migration target for
+the now-deprecated `llama-3.1-8b-instant`). `daily-brief.yml`'s `models:
+read` permission was dropped and replaced with a `GROQ_API_KEY` repository
+secret.
+
+**What to watch:** Groq's free tier has its own deprecation cadence (it
+retired `llama-3.1-8b-instant` and `llama-3.3-70b-versatile` in mid-2026) —
+check `openai/gpt-oss-20b`'s status if this summarizer starts failing again.
+
 <!-- Add new entries above this line as they're found. -->

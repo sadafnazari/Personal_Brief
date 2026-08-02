@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: read
-  models: read # required for the GitHub Models summarizer
 
 jobs:
   run:
@@ -27,9 +26,9 @@ jobs:
 
       - name: Run daily brief
         env:
-          PERSONAL_BRIEF_SUMMARIZER_PROVIDER: github_models
-          PERSONAL_BRIEF_SUMMARIZER_MODEL: openai/gpt-4o-mini
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PERSONAL_BRIEF_SUMMARIZER_PROVIDER: groq
+          PERSONAL_BRIEF_SUMMARIZER_MODEL: openai/gpt-oss-20b
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

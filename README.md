@@ -1,18 +1,17 @@
 # Personal Brief
 
-> A personal assistant that follows the people and trends worth your attention and delivers a daily brief — so you stop feeling left behind without spending time hunting.
+A personal assistant that follows the people and trends worth your attention and delivers a daily brief, so you stop feeling left behind without spending time hunting.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)
 ![CI](https://github.com/sadafnazari/Personal_Brief/actions/workflows/ci.yml/badge.svg)
 ![Daily brief](https://github.com/sadafnazari/Personal_Brief/actions/workflows/daily-brief.yml/badge.svg)
 
-Personal Brief watches the sources you trust and the places new ideas surface, then
-sends you one concise digest a day. Three pillars:
+Personal Brief watches the sources you trust and the places new ideas surface, then sends you one concise digest a day. Three pillars:
 
-- **Follow** — track specific people (blogs, newsletters) and summarize their new posts.
-- **Trends** — surface what is gaining traction right now (Hacker News, Reddit, ...).
-- **Discover** — proactively suggest new voices adjacent to the ones you already value.
+- **Follow**: track specific people (blogs, newsletters) and summarize their new posts.
+- **Trends**: surface what is gaining traction right now (Hacker News, Reddit, and more).
+- **Discover**: proactively suggest new voices adjacent to the ones you already value.
 
 ## Quickstart
 
@@ -24,10 +23,10 @@ conda activate personal_brief
 # 2. Install the project and dev tools
 pip install -e ".[dev]"
 
-# 3. Make it yours — edit the control panel
+# 3. Make it yours: edit the control panel
 $EDITOR config/sources.yaml
 
-# 4. Install Ollama (free, local summarizer) — Linux/WSL:
+# 4. Install Ollama (free, local summarizer) on Linux/WSL
 sudo apt-get update && sudo apt-get install -y zstd  # required by the installer below
 curl -fsSL https://ollama.com/install.sh | sh
 # macOS/Windows: download from https://ollama.com/download instead
@@ -40,73 +39,31 @@ ollama pull llama3.1
 python -m personal_brief run
 ```
 
-Each run fetches new posts from your Follow sources plus Hacker News and Reddit
-trends, summarizes anything you haven't seen yet, writes a dated digest to
-`data/digests/YYYY-MM-DD.html` (open it in a browser), grouped into Following,
-Trending, and Discover sections, and delivers it via Telegram if configured.
-Already-seen items are skipped on the next run.
+Each run fetches new posts from your Follow sources plus Hacker News and Reddit trends, summarizes anything you haven't seen yet, and writes a dated digest to `data/digests/YYYY-MM-DD.html` (open it in a browser), grouped into Following, Trending, and Discover sections. It also delivers the digest via Telegram if configured. Items you've already seen are skipped on the next run.
 
-If `discover.enabled: true` in `config/sources.yaml`, each run also mines
-your Trends items for domains that keep showing up but aren't followed yet.
-Once a domain crosses `discover.min_sightings`, it's suggested in your
-Telegram digest — reply `approve <domain>` to start following it (its feed
-is auto-detected where possible) or `reject <domain>` to dismiss it for
-good. You can also skip mining entirely and add any feed on the spot:
-reply `follow <name> <rss-url>` (e.g. `follow Kyle Kingsbury https://aphyr.com/posts.atom`)
-and it's validated and added immediately. Either way you get a confirmation
-message back. Authors added through Telegram — mined or manual — show up
-under Following automatically; they're tracked in the local database rather
-than `config/sources.yaml`, since they were added via Telegram rather than
-by hand.
+If `discover.enabled: true` in `config/sources.yaml`, each run also looks for domains that keep showing up in your Trends items but aren't followed yet. Once a domain crosses `discover.min_sightings`, it's suggested in your Telegram digest. Reply `approve <domain>` to start following it (its feed is auto-detected where possible) or `reject <domain>` to dismiss it for good. You can also skip suggestions entirely and add any feed on the spot: reply `follow <name> <rss-url>` (for example `follow Kyle Kingsbury https://aphyr.com/posts.atom`) and it's validated and added immediately. Either way you get a confirmation message back. Authors added through Telegram show up under Following automatically.
 
-> **Reddit caveat:** Reddit's public JSON endpoint may block requests from
-> some networks with a 403 (see [`docs/known-issues.md`](docs/known-issues.md)
-> for detail). If it happens, that subreddit's fetch is skipped with a logged
-> warning — Follow and Hacker News still work normally.
+> **Reddit caveat:** Reddit's public JSON endpoint may block requests from some networks with a 403 (see [`docs/known-issues.md`](docs/known-issues.md) for detail). If that happens, that subreddit is skipped and everything else still works normally.
 
 ## Configuration
 
-Everything you tune lives in [`config/sources.yaml`](config/sources.yaml) — the
-people to follow, the trend thresholds, which summarizer to use, and where to
-deliver. You edit that file; you never touch the code.
+Everything you tune lives in [`config/sources.yaml`](config/sources.yaml): the people to follow, the trend thresholds, which summarizer to use, and where to deliver. You edit that file, you never touch the code.
 
-Secrets (Telegram token, optional Claude API key, Groq API key, Turso
-credentials) go in a `.env` file — copy [`.env.example`](.env.example) and
-fill in whichever you need. `.env` is gitignored.
+Secrets (Telegram token, optional Claude or Groq API key, Turso credentials) go in a `.env` file. Copy [`.env.example`](.env.example) and fill in whichever you need. `.env` is gitignored.
 
-## Scheduling (GitHub Actions)
+## Scheduling
 
-[`.github/workflows/daily-brief.yml`](.github/workflows/daily-brief.yml) runs
-`personal-brief run` on a daily cron schedule, entirely on free tiers:
+Personal Brief can also run on its own every day via GitHub Actions ([`.github/workflows/daily-brief.yml`](.github/workflows/daily-brief.yml)), entirely on free tiers. To enable it, once the repo is on GitHub, add these as repository secrets:
 
-- **Summarizer:** [Groq](https://console.groq.com/docs) instead of Ollama —
-  GitHub Actions runners can't realistically run a local model, and Groq has
-  a free tier with no credit card required (previously this used GitHub
-  Models, retired 2026-07-30 — see `docs/known-issues.md`). This is CI-only —
-  local runs still default to Ollama. Both environments share the same
-  [`config/sources.yaml`](config/sources.yaml); the workflow overrides just
-  the summarizer via `PERSONAL_BRIEF_SUMMARIZER_PROVIDER` /
-  `PERSONAL_BRIEF_SUMMARIZER_MODEL` env vars, so there's nothing to keep in
-  sync by hand.
-- **State (dedupe + Discover):** [Turso](https://turso.tech) (hosted
-  libSQL/SQLite), not the local SQLite file — GitHub Actions runners are
-  ephemeral, so without a real database, every run would think everything is
-  new again. `Store` picks the backend automatically: Turso when
-  `TURSO_DATABASE_URL` is set (CI), local SQLite otherwise (your machine).
-  Local and CI deliberately use separate databases, so testing locally can
-  never mark real items as already-seen in production.
+- `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`
+- `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` (a free database at [turso.tech](https://turso.tech))
+- `GROQ_API_KEY` (a free key at [console.groq.com/keys](https://console.groq.com/keys))
 
-**To enable it**, once the repo is on GitHub: create a free Turso database
-and add `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` as repository secrets,
-alongside `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` and a `GROQ_API_KEY`
-(free, from [console.groq.com/keys](https://console.groq.com/keys)).
+See [`docs/architecture.md`](docs/architecture.md) for how the scheduled run differs from a local one.
 
 ## Architecture
 
-A small, pluggable pipeline — sources feed a dedupe store, which feeds a
-summarizer, which feeds delivery. Full design rationale, the protocol each
-stage implements, and how to extend it:
-**[`docs/architecture.md`](docs/architecture.md)**.
+A small, pluggable pipeline: sources feed a dedupe store, which feeds a summarizer, which feeds delivery. Full design rationale, the protocol each stage implements, and how to extend it: **[`docs/architecture.md`](docs/architecture.md)**.
 
 Known problems being tracked for later: **[`docs/known-issues.md`](docs/known-issues.md)**.
 
@@ -119,21 +76,16 @@ pytest -q tests                                 # tests
 pre-commit install                              # run all of the above on every commit
 ```
 
-See [`CLAUDE.md`](CLAUDE.md) for the full set of project conventions (agent
-instructions, but equally useful as a human contributor guide).
+See [`CLAUDE.md`](CLAUDE.md) for the full set of project conventions.
 
 ## Roadmap
 
-- [x] **Phase 0** — project scaffold, config, SQLite store
-- [x] **Phase 1** — RSS ingest → Ollama summary → local HTML digest
-- [x] **Phase 2** — Hacker News + Reddit trends, grouped digest sections
-- [x] **Phase 3** — Telegram delivery
-- [x] **Phase 4** — Discover pillar (suggest-and-approve)
-- [x] **Phase 5** — scheduling (GitHub Actions + GitHub Models + Turso,
-      verified with a real end-to-end run — daily digest delivered via
-      Telegram, dedupe state persisted in Turso)
-- [x] **Phase 6** — deployment (superseded by Phase 5's GitHub Actions
-      approach — no separate Docker packaging planned unless that changes)
+- [x] Project scaffold, config, SQLite store
+- [x] RSS ingest, Ollama summary, local HTML digest
+- [x] Hacker News and Reddit trends, grouped digest sections
+- [x] Telegram delivery
+- [x] Discover pillar (suggest and approve)
+- [x] Scheduling (GitHub Actions, hosted summarizer, hosted database)
 
 ## License
 

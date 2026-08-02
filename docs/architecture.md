@@ -86,12 +86,12 @@ class Summarizer(Protocol):
 
 - `ollama` — implemented, free/local, requires a running Ollama server. The
   local/interactive default.
-- `groq` — implemented (Phase 5, migrated from `github_models` after GitHub
-  Models was fully retired on 2026-07-30 — see `docs/known-issues.md`),
-  free/hosted via [Groq](https://console.groq.com/docs), authenticated with a
-  `GROQ_API_KEY`. The GitHub Actions default, set via
+- `groq` — implemented, free/hosted via [Groq](https://console.groq.com/docs),
+  authenticated with a `GROQ_API_KEY`. The GitHub Actions default, since CI
+  runners can't realistically run Ollama; set via
   `PERSONAL_BRIEF_SUMMARIZER_PROVIDER`/`PERSONAL_BRIEF_SUMMARIZER_MODEL` env
-  vars in `daily-brief.yml` — CI runners can't realistically run Ollama.
+  vars in `daily-brief.yml` (see [known-issues.md](known-issues.md) for the
+  history behind this choice).
 - `claude` — stubbed; `create_summarizer` raises `SummarizerError` with a
   clear "not implemented yet" message rather than silently failing.
 
@@ -228,6 +228,24 @@ _process_discover_replies()   (best-effort, if discover.enabled)
 `cli.py` has no business logic of its own — only sequencing, error handling
 per stage, and logging. Each step is a thin call into the module described
 above.
+
+## Scheduled runs (GitHub Actions)
+
+`daily-brief.yml` runs `personal-brief run` on a cron schedule, on the same
+`config/sources.yaml` a local run uses, with two things overridden via
+environment variables since GitHub Actions runners are ephemeral and can't
+realistically run a local model:
+
+- **Summarizer:** `groq` instead of `ollama`, via
+  `PERSONAL_BRIEF_SUMMARIZER_PROVIDER`/`PERSONAL_BRIEF_SUMMARIZER_MODEL`.
+- **Store backend:** `_TursoBackend` instead of `_SqliteBackend`, selected
+  automatically by `Store.open()` when `TURSO_DATABASE_URL` is set (see the
+  Store section above). Without a real remote database, every scheduled run
+  would see nothing as already-seen, since the runner's filesystem doesn't
+  persist between runs.
+
+Nothing else differs. Delivery and digest rendering are identical in both
+environments.
 
 ## Data & state
 

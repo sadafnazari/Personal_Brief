@@ -34,7 +34,6 @@ from personal_brief.env import load_dotenv
 from personal_brief.models import Item, Pillar
 from personal_brief.sources import Source, SourceError
 from personal_brief.sources.hackernews import HackerNewsSource
-from personal_brief.sources.reddit import RedditSource
 from personal_brief.sources.rss import RssSource
 from personal_brief.store import DiscoveredAuthor, Store, resolve_data_dir
 from personal_brief.summarize import SummarizerError, create_summarizer
@@ -206,15 +205,6 @@ def _build_sources(config: Config, store: Store) -> list[tuple[str, Source]]:
     if config.trends.hackernews is not None:
         sources.append(
             ("Hacker News", HackerNewsSource(min_points=config.trends.hackernews.min_points))
-        )
-
-    if config.trends.reddit is not None:
-        sources.extend(
-            (
-                f"r/{subreddit}",
-                RedditSource(subreddit=subreddit, min_upvotes=config.trends.reddit.min_upvotes),
-            )
-            for subreddit in config.trends.reddit.subreddits
         )
 
     return sources

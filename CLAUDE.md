@@ -8,13 +8,14 @@ session.
 ## What this is
 
 A personal, config-driven daily digest: follows specific people (RSS),
-surfaces trends (Hacker News, Reddit), and will eventually suggest new
-voices to follow (Discover pillar). Free by default (Ollama, local), with
-Claude as an opt-in paid swap. Full design rationale:
+surfaces trends (Hacker News), and will eventually suggest new voices to
+follow (Discover pillar). Free by default (Ollama, local), with Claude as an
+opt-in paid swap. Full design rationale:
 [`docs/architecture.md`](docs/architecture.md). Open problems:
 [`docs/known-issues.md`](docs/known-issues.md) — check there before assuming
-a source failure is a new bug (e.g. Reddit 403s are known and expected in
-some network environments).
+a source failure is a new bug (e.g. Reddit was dropped entirely as a Trends
+source after its anonymous JSON API proved unfixably 403-blocked; see that
+file's history).
 
 ## Environment
 
@@ -86,8 +87,8 @@ this way).
 ## Testing conventions
 
 - Mock HTTP with the `responses` library (already a dev dependency) — see
-  `tests/test_hackernews_source.py` / `test_reddit_source.py` /
-  `test_ollama_summarizer.py` for the pattern.
+  `tests/test_hackernews_source.py` / `test_ollama_summarizer.py` for the
+  pattern.
 - RSS/feed fixtures live in `tests/fixtures/`.
 - One test module per source file, named `test_<source>_source.py`.
 

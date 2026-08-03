@@ -42,13 +42,6 @@ follow:
 trends:
   hackernews:
     min_points: 150            # ignore front-page items below this score
-  reddit:
-    subreddits:
-      - programming
-      - ExperiencedDevs
-      - LocalLLaMA
-      - MachineLearning
-    min_upvotes: 200
 
 # How your daily brief gets written. This is the local default; the daily-brief
 # GitHub Actions workflow overrides provider/model via env vars (see

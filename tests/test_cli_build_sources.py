@@ -9,12 +9,10 @@ from personal_brief.config import (
     DiscoverConfig,
     FollowSource,
     HackerNewsConfig,
-    RedditConfig,
     SummarizerConfig,
     TrendsConfig,
 )
 from personal_brief.sources.hackernews import HackerNewsSource
-from personal_brief.sources.reddit import RedditSource
 from personal_brief.sources.rss import RssSource
 from personal_brief.store import Store
 
@@ -47,21 +45,6 @@ def test_build_sources_includes_hackernews_when_configured(tmp_path: Path) -> No
     hn_source = dict(sources)["Hacker News"]
     assert isinstance(hn_source, HackerNewsSource)
     assert hn_source.min_points == 100
-
-
-def test_build_sources_includes_one_reddit_source_per_subreddit(tmp_path: Path) -> None:
-    with Store.open(tmp_path) as store:
-        sources = _build_sources(
-            _config(reddit=RedditConfig(subreddits=("programming", "LocalLLaMA"), min_upvotes=250)),
-            store,
-        )
-
-    names = [name for name, _ in sources]
-    assert "r/programming" in names
-    assert "r/LocalLLaMA" in names
-    reddit_source = dict(sources)["r/programming"]
-    assert isinstance(reddit_source, RedditSource)
-    assert reddit_source.min_upvotes == 250
 
 
 def test_build_sources_includes_approved_discover_authors(tmp_path: Path) -> None:

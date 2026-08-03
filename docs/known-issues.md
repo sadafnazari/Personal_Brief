@@ -21,16 +21,20 @@ User-Agent strings, including a real browser UA — all 403'd identically from
 a cloud sandbox, while Hacker News's Algolia API succeeded over the same
 network path.
 
-**What we don't yet know:** whether it also 403s from a real WSL/home
-network. Cloud/datacenter IP ranges are the documented target of Reddit's
-block; a home residential IP is a different case and may work fine.
-**First step when picking this up: just run `personal-brief run` from the
-real machine and check the log for `r/...` warnings.**
+**Update (2026-08-03):** Tested from a real residential connection — egress
+IP traced to a home/mobile ISP (Elisa Oyj, AS719, Finland), not a
+cloud/datacenter range — and the endpoint still returned 403 on all
+configured subreddits. So this isn't narrowly a "datacenter IP" block as
+originally assumed; Reddit's anonymous JSON endpoint appears to block more
+broadly (geography, ASN reputation, and/or User-Agent/behavior heuristics).
+The "maybe it's fine from home" hope is ruled out — treat this as blocked
+regardless of network.
 
-**Options if it's blocked from home too, roughly in order of effort:**
+**Options, roughly in order of effort:**
 
 1. **Do nothing.** Accept degraded Reddit coverage — Follow and Hacker News
-   still work. Simplest, and may be moot if the home network isn't blocked.
+   still work. Simplest, and current default behavior since Reddit is
+   blocked regardless of network.
 2. **Authenticated Reddit API (PRAW).** Register a free Reddit "script" app,
    use OAuth client credentials instead of the anonymous JSON endpoint. More
    reliable, but adds a secret to manage and a new dependency (`praw`).
@@ -40,8 +44,13 @@ real machine and check the log for `r/...` warnings.**
 4. **A proxy/relay.** Adds infrastructure and cost; not worth it for a hobby
    project.
 
-**Recommendation when picking this up:** try option 1 (just test from home)
-before spending effort on 2 or 3.
+**Decision (2026-08-03):** Reddit was dropped entirely as a Trends source
+rather than pursuing option 2 (PRAW) or 3 (lobste.rs/proxy) — the 403 is
+confirmed unfixable without an authenticated API or a proxy, and that
+maintenance cost wasn't worth it for a hobby project. `RedditSource`,
+`RedditConfig`, and the `trends.reddit` config block have been removed from
+the codebase; Hacker News and Follow/RSS remain. This entry is kept as a
+historical record of why there's no Reddit source in the code.
 
 ## GitHub Models was fully retired (2026-07-30) — summarizer migrated to Groq
 

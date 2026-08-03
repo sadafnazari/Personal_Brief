@@ -1,6 +1,6 @@
 """Source plugins.
 
-Every source (RSS today; Hacker News, Reddit, ... later) implements the
+Every source (RSS, Hacker News, ... more later) implements the
 :class:`Source` protocol and returns a list of normalized
 :class:`~personal_brief.models.Item`. Nothing downstream cares which source an
 item came from, so adding a new one is a single new file here plus a factory

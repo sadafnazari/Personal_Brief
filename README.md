@@ -10,7 +10,7 @@ A personal assistant that follows the people and trends worth your attention and
 Personal Brief watches the sources you trust and the places new ideas surface, then sends you one concise digest a day. Three pillars:
 
 - **Follow**: track specific people (blogs, newsletters) and summarize their new posts.
-- **Trends**: surface what is gaining traction right now (Hacker News, Reddit, and more).
+- **Trends**: surface what is gaining traction right now (Hacker News, and more).
 - **Discover**: proactively suggest new voices adjacent to the ones you already value.
 
 ## Quickstart
@@ -39,11 +39,9 @@ ollama pull llama3.1
 python -m personal_brief run
 ```
 
-Each run fetches new posts from your Follow sources plus Hacker News and Reddit trends, summarizes anything you haven't seen yet, and writes a dated digest to `data/digests/YYYY-MM-DD.html` (open it in a browser), grouped into Following, Trending, and Discover sections. It also delivers the digest via Telegram if configured. Items you've already seen are skipped on the next run.
+Each run fetches new posts from your Follow sources plus Hacker News trends, summarizes anything you haven't seen yet, and writes a dated digest to `data/digests/YYYY-MM-DD.html` (open it in a browser), grouped into Following, Trending, and Discover sections. It also delivers the digest via Telegram if configured. Items you've already seen are skipped on the next run.
 
 If `discover.enabled: true` in `config/sources.yaml`, each run also looks for domains that keep showing up in your Trends items but aren't followed yet. Once a domain crosses `discover.min_sightings`, it's suggested in your Telegram digest. Reply `approve <domain>` to start following it (its feed is auto-detected where possible) or `reject <domain>` to dismiss it for good. You can also skip suggestions entirely and add any feed on the spot: reply `follow <name> <rss-url>` (for example `follow Kyle Kingsbury https://aphyr.com/posts.atom`) and it's validated and added immediately. Either way you get a confirmation message back. Authors added through Telegram show up under Following automatically.
-
-> **Reddit caveat:** Reddit's public JSON endpoint may block requests from some networks with a 403 (see [`docs/known-issues.md`](docs/known-issues.md) for detail). If that happens, that subreddit is skipped and everything else still works normally.
 
 ## Configuration
 
@@ -82,7 +80,7 @@ See [`CLAUDE.md`](CLAUDE.md) for the full set of project conventions.
 
 - [x] Project scaffold, config, SQLite store
 - [x] RSS ingest, Ollama summary, local HTML digest
-- [x] Hacker News and Reddit trends, grouped digest sections
+- [x] Hacker News trends, grouped digest sections (Reddit was tried and dropped — see [`docs/known-issues.md`](docs/known-issues.md))
 - [x] Telegram delivery
 - [x] Discover pillar (suggest and approve)
 - [x] Scheduling (GitHub Actions, hosted summarizer, hosted database)

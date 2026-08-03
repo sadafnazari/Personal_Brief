@@ -15,9 +15,6 @@ follow:
 trends:
   hackernews:
     min_points: 120
-  reddit:
-    subreddits: [programming, ExperiencedDevs]
-    min_upvotes: 150
 summarizer:
   provider: ollama
   model: llama3.1
@@ -43,8 +40,6 @@ def test_load_config_parses_all_sections(tmp_path: Path) -> None:
     assert config.follow[0].name == "Martin Fowler"
     assert config.trends.hackernews is not None
     assert config.trends.hackernews.min_points == 120
-    assert config.trends.reddit is not None
-    assert config.trends.reddit.subreddits == ("programming", "ExperiencedDevs")
     assert config.summarizer.provider == "ollama"
     assert config.delivery.telegram is True
     assert config.discover.enabled is True

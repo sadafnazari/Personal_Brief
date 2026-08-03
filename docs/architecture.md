@@ -27,7 +27,6 @@ class Source(Protocol):
 |---|---|---|---|
 | RSS/Atom | `rss.py` | Follow | via `feedparser`; caps at 5 most-recent entries/feed |
 | Hacker News | `hackernews.py` | Trends | Algolia API, sorted by points descending |
-| Reddit | `reddit.py` | Trends | one instance per subreddit; see [known-issues.md](known-issues.md) |
 
 Implementations raise `SourceError` on failure. The CLI catches it **per
 source** — logs a warning and continues — so one dead feed or blocked API

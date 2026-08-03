@@ -1,6 +1,6 @@
 """Normalized data types shared across the pipeline.
 
-Every source, regardless of origin (RSS, Hacker News, Reddit, ...), converts its
+Every source, regardless of origin (RSS, Hacker News, ...), converts its
 raw payload into an :class:`Item`. Downstream stages (dedupe, summarize, deliver)
 only ever see :class:`Item`, so adding a new source never ripples past this module.
 """

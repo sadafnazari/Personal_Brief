@@ -44,15 +44,8 @@ class HackerNewsConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class RedditConfig:
-    subreddits: tuple[str, ...]
-    min_upvotes: int = 200
-
-
-@dataclass(frozen=True, slots=True)
 class TrendsConfig:
     hackernews: HackerNewsConfig | None = None
-    reddit: RedditConfig | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,20 +147,7 @@ def _parse_trends(raw: dict[str, Any]) -> TrendsConfig:
             raise ConfigError("'trends.hackernews' must be a mapping.")
         hackernews = HackerNewsConfig(min_points=int(section.get("min_points", 150)))
 
-    reddit: RedditConfig | None = None
-    if "reddit" in trends:
-        section = trends["reddit"] or {}
-        if not isinstance(section, dict):
-            raise ConfigError("'trends.reddit' must be a mapping.")
-        subreddits = section.get("subreddits", [])
-        if not isinstance(subreddits, list) or not all(isinstance(s, str) for s in subreddits):
-            raise ConfigError("'trends.reddit.subreddits' must be a list of strings.")
-        reddit = RedditConfig(
-            subreddits=tuple(subreddits),
-            min_upvotes=int(section.get("min_upvotes", 200)),
-        )
-
-    return TrendsConfig(hackernews=hackernews, reddit=reddit)
+    return TrendsConfig(hackernews=hackernews)
 
 
 def _parse_summarizer(raw: dict[str, Any]) -> SummarizerConfig:

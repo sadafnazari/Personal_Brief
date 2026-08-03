@@ -34,17 +34,37 @@ class SummarizerError(Exception):
     """Raised when a summarizer cannot produce a summary."""
 
 
+_BODY_EXCERPT_LENGTH = 500
+
+
+def _excerpt(body: str, max_length: int = _BODY_EXCERPT_LENGTH) -> str:
+    """Truncate ``body`` to a word boundary so the excerpt never ends mid-word."""
+    if len(body) <= max_length:
+        return body
+    truncated = body[:max_length]
+    last_space = truncated.rfind(" ")
+    if last_space > 0:
+        truncated = truncated[:last_space]
+    return truncated.rstrip() + "…"
+
+
 def build_prompt(items: Sequence[Item]) -> str:
     """Build the shared digest prompt used by every summarizer backend."""
     entries = "\n\n".join(
-        f"- {item.title} (by {item.author or item.source})\n  {item.url}\n  {item.body[:500]}"
+        f"- {item.title} (by {item.author or item.source})\n  {item.url}\n  {_excerpt(item.body)}"
         for item in items
     )
     return (
         "You are writing a short, friendly daily digest for one reader who follows "
         "these authors. Summarize the new posts below in a few sentences each, "
-        "grouped naturally, in plain prose. Do not invent details not present in "
-        "the text. Skip a post entirely if there isn't enough content to summarize.\n\n"
+        "grouped naturally by author, in plain conversational prose — like a quick "
+        "update from a friend, not a press release. Some post excerpts are cut off "
+        "mid-thought; if an excerpt trails off, summarize only what's actually there "
+        "instead of guessing how it ends. Do not invent details not present in the "
+        "text. Skip a post entirely if there isn't enough content to summarize.\n\n"
+        "Formatting: write plain text only. Do not use markdown — no **bold**, no "
+        "*italics*, no # headings, no bullet points. Separate authors or topics with "
+        "a blank line, not a heading.\n\n"
         f"{entries}"
     )
 

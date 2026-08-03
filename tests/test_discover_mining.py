@@ -49,6 +49,13 @@ def test_extract_domain_excludes_aggregator_self_posts() -> None:
     assert mining.extract_domain(reddit_self_post) is None
 
 
+def test_extract_domain_excludes_platform_domains() -> None:
+    github_repo = _trends_item("https://github.com/someuser/somerepo", "1")
+    twitter_status = _trends_item("https://x.com/someuser/status/123", "2")
+    assert mining.extract_domain(github_repo) is None
+    assert mining.extract_domain(twitter_status) is None
+
+
 def test_followed_domains_includes_config_and_approved(tmp_path: Path) -> None:
     with Store.open(tmp_path) as store:
         store.create_suggestion("aphyr.com", feed_url="https://aphyr.com/posts.atom", reason="x")
@@ -90,6 +97,21 @@ def test_mine_skips_already_followed_domains(tmp_path: Path) -> None:
         mining.mine(items, known_domains={"martinfowler.com"}, store=store, min_sightings=2)
 
         assert store.get_pending_suggestions() == []
+
+
+def test_prune_platform_suggestions_rejects_stale_platform_domains(tmp_path: Path) -> None:
+    with Store.open(tmp_path) as store:
+        store.create_suggestion(
+            "github.com", feed_url=None, reason="seen 3x in Trends — no feed auto-detected"
+        )
+        store.create_suggestion(
+            "aphyr.com", feed_url="https://aphyr.com/posts.atom", reason="'Aphyr' — seen 3x"
+        )
+
+        mining.prune_platform_suggestions(store)
+
+        pending = store.get_pending_suggestions()
+        assert [author.name for author in pending] == ["aphyr.com"]
 
 
 def test_mine_skips_domains_already_decided(tmp_path: Path) -> None:

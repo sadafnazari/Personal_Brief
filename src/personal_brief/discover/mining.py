@@ -15,16 +15,39 @@ from urllib.parse import urlparse
 from personal_brief.config import Config
 from personal_brief.discover.feed_discovery import discover_feed_url
 from personal_brief.models import Item
-from personal_brief.store import Store
+from personal_brief.store import STATUS_REJECTED, Store
 
-# Aggregator domains themselves are never a useful "who to follow" suggestion.
-_SELF_DOMAINS = {"news.ycombinator.com", "reddit.com", "www.reddit.com", "redd.it"}
+# Aggregator self-domains and major shared hosting/platform domains are never
+# a useful "who to follow" suggestion — they're not an author/voice, just
+# infrastructure that happens to host one.
+_PLATFORM_DOMAINS = {
+    "news.ycombinator.com",
+    "reddit.com",
+    "www.reddit.com",
+    "redd.it",
+    "github.com",
+    "gist.github.com",
+    "gitlab.com",
+    "twitter.com",
+    "x.com",
+    "youtube.com",
+    "youtu.be",
+    "npmjs.com",
+    "pypi.org",
+    "crates.io",
+    "arxiv.org",
+    "en.wikipedia.org",
+    "wikipedia.org",
+    "stackoverflow.com",
+    "developer.mozilla.org",
+    "linkedin.com",
+}
 
 
 def extract_domain(item: Item) -> str | None:
-    """Return the item's URL host, or ``None`` for aggregator self-posts."""
+    """Return the item's URL host, or ``None`` for aggregator/platform domains."""
     netloc = urlparse(item.url).netloc
-    if not netloc or netloc in _SELF_DOMAINS:
+    if not netloc or netloc in _PLATFORM_DOMAINS:
         return None
     return netloc
 
@@ -38,6 +61,20 @@ def followed_domains(config: Config, store: Store) -> set[str]:
         if author.feed_url
     )
     return domains
+
+
+def prune_platform_suggestions(store: Store) -> None:
+    """Reject pending suggestions for domains ``_PLATFORM_DOMAINS`` later grew to cover.
+
+    ``_PLATFORM_DOMAINS`` has been extended over time; a suggestion created
+    before a domain was added (e.g. "github.com", suggested before it was
+    blocklisted) would otherwise sit as 'suggested' — and keep showing up in
+    every digest — forever. Run this once per pipeline run so both local and
+    production stores self-heal without a manual data fix.
+    """
+    for author in store.get_pending_suggestions():
+        if author.name in _PLATFORM_DOMAINS:
+            store.update_suggestion_status(author.name, STATUS_REJECTED)
 
 
 def mine(

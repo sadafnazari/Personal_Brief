@@ -138,6 +138,8 @@ def _mine_and_build_discover_items(config: Config, store: Store, items: list[Ite
     if not config.discover.enabled:
         return []
 
+    mining.prune_platform_suggestions(store)
+
     trends_items = [item for item in items if item.pillar is Pillar.TRENDS]
     known_domains = mining.followed_domains(config, store)
     mining.mine(trends_items, known_domains, store, config.discover.min_sightings)

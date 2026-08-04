@@ -3,9 +3,8 @@ name: Daily brief
 
 on:
   schedule:
-    # 07:00 UTC daily — adjust to taste. Cron minutes are UTC regardless of
-    # your local timezone.
-    - cron: "0 7 * * *"
+    # 16:00 UTC daily
+    - cron: "0 16 * * *"
   workflow_dispatch: {} # lets you trigger a run manually from the Actions tab
 
 permissions:

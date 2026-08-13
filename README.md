@@ -67,14 +67,20 @@ Known problems being tracked for later: **[`docs/known-issues.md`](docs/known-is
 
 ## Development
 
+Run these from the project environment (`conda activate personal_brief`), where the editable install lives:
+
 ```bash
 ruff format src tests && ruff check src tests   # lint + format
-mypy src tests                                  # type check
+mypy src tests                                  # type check (strict)
 pytest -q tests                                 # tests
 pre-commit install                              # run all of the above on every commit
 ```
 
-See [`CLAUDE.md`](CLAUDE.md) for the full set of project conventions.
+`pyproject.toml` is the single source of dependency truth — there is no `requirements.txt` and no committed conda env file. After any dependency change, re-run `pip install -e ".[dev]"`; an editable install picks up code changes on its own but not new dependencies.
+
+### Working with Claude Code
+
+The gates above are also enforced automatically when the repo is edited through [Claude Code](https://claude.com/claude-code). [`.claude/settings.json`](.claude/settings.json) registers four hooks from [`.claude/hooks/`](.claude/hooks/): files are ruff-formatted as they're written, `mypy` and `pytest` must pass before a turn can end, tooling run outside the conda env is rejected, and `git commit` / `git push` always ask first. [`CLAUDE.md`](CLAUDE.md) carries only what those hooks can't check — the plugin boundaries and settled design decisions.
 
 ## Roadmap
 

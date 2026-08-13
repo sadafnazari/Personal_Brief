@@ -3,7 +3,8 @@
 
 Only the gates that need the whole tree run here; ruff is already handled
 per-file. Exiting 2 blocks the turn and returns the output to Claude. The
-sentinel skips the ~5s run when no Python file has changed since it last passed.
+sentinel records the file set and time of the last passing run, so the ~5s cost
+is paid only when a Python source is added, removed, renamed, or edited.
 """
 
 from __future__ import annotations
@@ -22,15 +23,27 @@ GATES = (
 )
 
 
-def python_sources_changed() -> bool:
+def python_sources() -> list[Path]:
+    return sorted(
+        path
+        for directory in WATCHED_DIRECTORIES
+        for path in (PROJECT_ROOT / directory).rglob("*.py")
+    )
+
+
+def manifest(sources: list[Path]) -> str:
+    return "".join(f"{path.relative_to(PROJECT_ROOT)}\n" for path in sources)
+
+
+def python_sources_changed(sources: list[Path]) -> bool:
     if not SENTINEL.exists():
         return True
+    # A rename or deletion leaves every surviving file older than the sentinel,
+    # so the file set is compared as well as the timestamps.
+    if SENTINEL.read_text() != manifest(sources):
+        return True
     checkpoint = SENTINEL.stat().st_mtime
-    for directory in WATCHED_DIRECTORIES:
-        for path in (PROJECT_ROOT / directory).rglob("*.py"):
-            if path.stat().st_mtime > checkpoint:
-                return True
-    return False
+    return any(path.stat().st_mtime > checkpoint for path in sources)
 
 
 def run_gate(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -47,7 +60,8 @@ def main() -> None:
     payload = json.load(sys.stdin)
     if payload.get("stop_hook_active"):
         sys.exit(0)
-    if not python_sources_changed():
+    sources = python_sources()
+    if not python_sources_changed(sources):
         sys.exit(0)
 
     for name, command in GATES:
@@ -61,7 +75,7 @@ def main() -> None:
             )
             sys.exit(2)
 
-    SENTINEL.touch()
+    SENTINEL.write_text(manifest(sources))
     sys.exit(0)
 
 

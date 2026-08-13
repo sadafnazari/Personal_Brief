@@ -21,6 +21,7 @@ data/
 
 # Editor / tooling local settings
 .claude/settings.local.json
+.claude/.quality_gates_ok
 
 # OS
 .DS_Store
